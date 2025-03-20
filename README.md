@@ -19,4 +19,7 @@ How to Use This Code
 2. Open the file in Chrome
 3. Click the "Choose File" button to select your text file
 4. The content between delimiter lines will be displayed as separate clickable sections
-5.Click on any section to copy its content to your clipboard
+5. Click on any section to copy its content to your clipboard
+
+## Updated configuration
+Modify the code to display only the first 50 characters of each section followed by "..." while still copying the full content when clicked
