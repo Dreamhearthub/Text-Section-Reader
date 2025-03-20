@@ -13,3 +13,10 @@ This is for reading a text file paragraph by paragraph, where paragraphs are del
 5. Shows individual lines as clickable elements
 6. When you click a line, it copies that line to the clipboard
 7. Provides navigation buttons to move between paragraphs
+
+How to Use This Code
+1. Save the code above as an HTML file (e.g., text-reader.html)
+2. Open the file in Chrome
+3. Click the "Choose File" button to select your text file
+4. The content between delimiter lines will be displayed as separate clickable sections
+5.Click on any section to copy its content to your clipboard
