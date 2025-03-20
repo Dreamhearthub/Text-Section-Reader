@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <title>Text Section Reader</title> -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        #file-input {
+            /* margin-bottom: 20px; */
+        }
+
+        #sections-container {
+            width: 100%;
+        }
+
+        .section {
+            font-size: 12px !important;
+            /* padding: 15px; */
+            margin-bottom: 4px;
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            white-space: pre-wrap;
+            overflow-wrap: break-word;
+        }
+
+        .section:hover {
+            background-color: #e0e0e0;
+        }
+
+        #status {
+            margin-top: 20px;
+            padding: 10px;
+            color: #333;
+        }
+
+        .copied {
+            background-color: #d4edda !important;
+            border-color: #c3e6cb !important;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- <h1>Text Section Reader</h1> -->
+
+    <input type="file" id="file-input" accept=".txt,.md">
+    <div id="status"></div>
+
+    <div id="sections-container"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const fileInput = document.getElementById('file-input');
+            const sectionsContainer = document.getElementById('sections-container');
+            const statusElement = document.getElementById('status');
+
+            fileInput.addEventListener('change', function (e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const content = e.target.result;
+                    processContent(content);
+                };
+                reader.onerror = function () {
+                    statusElement.textContent = 'Error reading file';
+                };
+                reader.readAsText(file);
+            });
+
+            function processContent(content) {
+                // Clear previous sections
+                sectionsContainer.innerHTML = '';
+
+                // Split content by lines
+                const lines = content.split('\n');
+                let sections = [];
+                let currentSection = [];
+                let isDelimiter = line => line.includes('=') && line.replace(/[^=]/g, '').length >= 5;
+
+                // Find all sections between delimiter lines
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i];
+
+                    if (isDelimiter(line)) {
+                        // We found a delimiter line
+                        if (currentSection.length > 0) {
+                            // Save the current section if it's not empty
+                            sections.push(currentSection.join('\n'));
+                            currentSection = [];
+                        }
+                    } else {
+                        // Add non-delimiter lines to the current section
+                        currentSection.push(line);
+                    }
+                }
+
+                // Add the last section if there is one
+                if (currentSection.length > 0) {
+                    sections.push(currentSection.join('\n'));
+                }
+
+                // Display sections
+                if (sections.length > 0) {
+                    sections.forEach((section, index) => {
+                        const sectionElement = document.createElement('div');
+                        sectionElement.className = 'section';
+
+                        // Get the trimmed full content
+                        const fullContent = section.trim();
+
+                        // Convert to single line by replacing all line breaks with spaces
+                        const singleLineContent = fullContent.replace(/\n/g, ' ').replace(/\s+/g, ' ');
+
+                        // Create preview text (first 50 chars + "...")
+                        const previewText = singleLineContent.length > 50
+                            ? singleLineContent.substring(0, 50) + '...'
+                            : singleLineContent;
+
+                        // Set the preview text as visible content
+                        sectionElement.textContent = previewText;
+
+                        // Store the full content as a data attribute
+                        sectionElement.dataset.fullContent = fullContent;
+
+                        // Add click event to copy the full content
+                        sectionElement.addEventListener('click', function () {
+                            copyToClipboard(fullContent, sectionElement);
+                        });
+
+                        sectionsContainer.appendChild(sectionElement);
+                    });
+
+                    statusElement.textContent = `Found ${sections.length} sections. Click on any section to copy its full content.`;
+                } else {
+                    statusElement.textContent = 'No sections found between delimiters.';
+                }
+            }
+            function copyToClipboard(text, element) {
+                navigator.clipboard.writeText(text).then(() => {
+                    // Visual feedback
+                    element.classList.add('copied');
+                    statusElement.textContent = `Copied section to clipboard! (${text.length} characters)`;
+
+                    // Remove the highlight after 1 second
+                    setTimeout(() => {
+                        element.classList.remove('copied');
+                    }, 1000);
+                }).catch(err => {
+                    statusElement.textContent = 'Failed to copy text: ' + err;
+                });
+            }
+        });
+    </script>
+</body>
